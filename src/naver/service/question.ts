@@ -43,7 +43,7 @@ export class QuestionService {
         return result;
     }
 
-    public async getQuestionDetail(driver: WebDriver, question: Question) {
+    public async getQuestionDetail(driver: WebDriver, question: Question): Promise<Question> {
         await driver.get(question.link);
         await driver.wait(
             until.elementLocated(By.css('div.questionDetail')),
