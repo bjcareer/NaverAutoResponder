@@ -1,6 +1,7 @@
 import {LoginCommand} from "../in/loginCommand";
 import clipboardy from 'clipboardy';
 import {By, Key, until, WebDriver} from 'selenium-webdriver';
+import * as os from "node:os";
 
 export class LoginService {
     public static readonly LOGIN_URL = 'https://nid.naver.com/nidlogin.login';
