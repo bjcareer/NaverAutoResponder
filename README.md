@@ -14,7 +14,7 @@ Selenium WebDriver(Chromium) 기반의 브라우저 제어와 Cheerio 기반의 
 4. [설치 및 실행](#설치-및-실행)
 5. [환경 변수 설정](#환경-변수-설정)
 6. [사용 방법](#사용-방법)
-    - [LoginService](#loginservice)
+    - [Login](#loginservice)
     - [QuestionService](#questionservice)
 7. [프로젝트 구조](#프로젝트-구조)
 8. [테스트](#테스트)
@@ -40,7 +40,7 @@ Selenium WebDriver(Chromium) 기반의 브라우저 제어와 Cheerio 기반의 
 
 ## 주요 기능
 
-### 1. LoginService
+### 1. Login
 - `ChromDriver` 유틸로 Chromium 드라이버 생성
 - 아이디/비밀번호 입력 → 로그인 버튼 클릭 → 완료 대기
 - `static readonly` 상수로 URL·셀렉터 관리
