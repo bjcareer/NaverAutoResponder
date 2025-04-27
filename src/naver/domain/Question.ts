@@ -1,5 +1,6 @@
 export class Question {
     private _answer: string | null = null;
+    private _detailQuestion: string | null = null;
 
     constructor(
         private readonly _title: string,
@@ -12,9 +13,17 @@ export class Question {
         this._answer = answer;
     }
 
+    public addDetailQuestion(content: string): void {
+        this._detailQuestion = content;
+    }
+
     /** 질문 제목 */
     public get title(): string {
         return this._title;
+    }
+
+    public get detailQuestion(): string {
+        return this._detailQuestion ?? '질문 내용을 찾지 못했습니다.';
     }
 
     /** 질문 링크 */

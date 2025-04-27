@@ -41,6 +41,27 @@ export class QuestionService {
         return result;
     }
 
+    public async getQuestionDetail(driver: WebDriver, question: Question): Promise<Question> {
+        await driver.get(question.link);
+        await driver.wait(
+            until.elementLocated(By.css('div.questionDetail')),
+            QuestionService.DEFAULT_TIMEOUT
+        );
+
+        // 2) 페이지 소스 파싱
+        const html = await driver.getPageSource();
+        const $ = cheerio.load(html);
+
+        // 3) 질문 본문 추출
+        const $detail = $('div.questionDetail').first();
+        const detailText = $detail.length
+            ? $detail.text().trim()
+            : '질문 내용을 찾지 못했습니다.';
+
+        question.addDetailQuestion(detailText);
+
+        return question;
+    }
     /**
      * 상대경로 href를 절대 URL로 변환합니다.
      */

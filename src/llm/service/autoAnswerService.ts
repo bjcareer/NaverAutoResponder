@@ -1,9 +1,9 @@
 // src/services/AutoAnswerService.ts
 
-import { ChatOpenAI } from "@langchain/openai";
-import { LLMChain }   from "langchain/chains";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { Question }   from "../../naver/domain/Question";
+import {ChatOpenAI} from "@langchain/openai";
+import {LLMChain} from "langchain/chains";
+import {ChatPromptTemplate} from "@langchain/core/prompts";
+import {Question} from "../../naver/domain/Question";
 
 export class AutoAnswerService {
     constructor(private readonly _chatModel: ChatOpenAI) {}
@@ -13,11 +13,9 @@ export class AutoAnswerService {
      */
     public async autoAnswer(questions: Question[]): Promise<void> {
         for (const question of questions) {
-            console.log(`질문: ${question.title}`);
-            const prompt = this.getPrompt(question);
+            const prompt = this.getPrompt(question.detailQuestion);
             const answer = await this.invokeChatModel(prompt);
             question.addAnswer(answer);
-            console.log(`답변: ${answer}`);
         }
     }
 
@@ -33,7 +31,7 @@ export class AutoAnswerService {
     /**
      * 주어진 Question에 맞춰 ChatPromptTemplate을 생성합니다.
      */
-    private getPrompt(question: Question): ChatPromptTemplate {
+    private getPrompt(question: String): ChatPromptTemplate {
         return ChatPromptTemplate.fromMessages([
             { role: "system", content: this.createSystemMessage() },
             { role: "user",   content: this.createUserMessage(question) },
@@ -44,10 +42,10 @@ export class AutoAnswerService {
         return "You are a helpful assistant. Please respond in Korean.";
     }
 
-    private createUserMessage(question: Question): string {
+    private createUserMessage(question: String): string {
         return (
             "Please provide a response tailored to the user's question.\n\n" +
-            `Question: ${question.title}\n\n` +
+            `Question: ${question}\n\n` +
             "Answer:"
         );
     }
