@@ -1,22 +1,34 @@
+export class Question {
+    private _answer: string | null = null;
 
-
-export class Question{
     constructor(
         private readonly _title: string,
         private readonly _link: string,
-        private readonly _answer_count: number
-    ) {
+        private readonly _answerCount: number,
+    ) {}
+
+    /** 답변을 설정합니다 */
+    public addAnswer(answer: string): void {
+        this._answer = answer;
     }
 
-    get title(): string {
+    /** 질문 제목 */
+    public get title(): string {
         return this._title;
     }
 
-    get link(): string {
+    /** 질문 링크 */
+    public get link(): string {
         return this._link;
     }
 
-    get answer_count(): number {
-        return this._answer_count;
+    /** 답변 수 */
+    public get answerCount(): number {
+        return this._answerCount;
+    }
+
+    /** 생성된 AI 답변 (없으면 null) */
+    public get answer(): string | null {
+        return this._answer;
     }
 }
