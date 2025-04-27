@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "chromedriver": "^135.0.4",
+    "clipboardy": "^4.0.0",
     "selenium-webdriver": "^4.31.0"
   }
 }
