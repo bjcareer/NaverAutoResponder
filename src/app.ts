@@ -1,20 +1,20 @@
 import {ChromDriver} from "./chrom/utils/chromDriver";
 import {LoginService} from "./naver/service/loginService";
 import {LoginCommand} from "./naver/in/loginCommand";
+import {QuestionService} from "./naver/service/question";
+import {QuestionCommand} from "./naver/in/questionCommand";
 
 async function main(): Promise<void> {
     const chromDriver = new ChromDriver();
     const loginService = new LoginService();
+    const questionService = new QuestionService();
     const driver = await chromDriver.createDriver();
 
     try {
         // 테스트할 시나리오
         await driver.get('https://www.naver.com/');
-        console.log(await driver.getTitle());
-        await driver.sleep(5000);
         await loginService.login(new LoginCommand('changeme', 'changeme'), driver);
-
-        // driver.wait(10000);
+        let questions = await questionService.getQuestions(new QuestionCommand('자바스크립트'), driver);
 
     } finally {
         await driver.quit();
