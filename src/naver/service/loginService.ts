@@ -30,6 +30,7 @@ export class LoginService {
         await clipboardy.write(text);
         const el = await driver.wait(until.elementLocated(By.xpath(xpath)), 10000);
         await el.click();
-        await el.sendKeys(Key.COMMAND, 'v');
+        const pasteKey = os.platform() === 'darwin' ? Key.COMMAND : Key.CONTROL;
+        await el.sendKeys(pasteKey, 'v');
     }
 }
