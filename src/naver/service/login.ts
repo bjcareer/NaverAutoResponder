@@ -27,19 +27,36 @@ export class Login {
         // 로그인 버튼 클릭
         const loginBtn = await driver.wait(until.elementLocated(By.id(Login.LOGIN_BUTTON_ID)), 10000);
         await loginBtn.click();
+
+        await this.skipDeviceRegistration(driver);
     }
 
     /**
      * 입력 필드에 클립보드를 이용해 붙여넣기합니다.
-     * 캡차 등 직접 타이핑이 차단될 때 사용하세요.
+     * 캡챠 등 직접 타이핑이 차단될 때 사용하세요.
      */
     private async clipboardInput(driver: WebDriver, xpath: string, text: string): Promise<void> {
         const el = await driver.wait(until.elementLocated(By.xpath(xpath)), 10000);
         await el.click();
+        // 클립보드에 텍스트 복사
         await clipboardy.writeSync(text);
+        // Paste 단축키 (mac: ⌘, 기타: Ctrl)
         const pasteKey = process.platform === "darwin" ? Key.COMMAND : Key.CONTROL;
         const pasteChord = Key.chord(pasteKey, "v");
         await el.sendKeys(pasteChord);
-        await driver.sleep(200);
+    }
+
+    private async skipDeviceRegistration(driver: WebDriver): Promise<void> {
+        try {
+            const dontSaveBtn = await driver.wait(
+                until.elementLocated(By.id('new.dontsave')),
+                10000
+            );
+            await driver.wait(until.elementIsVisible(dontSaveBtn), 5000);
+            await dontSaveBtn.click();
+            console.log("✅ [등록안함] 버튼 클릭 완료");
+        } catch (e) {
+            console.warn("⚠️ [등록안함] 버튼이 없습니다.");
+        }
     }
 }
