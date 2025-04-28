@@ -61,11 +61,9 @@ export class QuestionService {
         question.addDetailQuestion(detailText);
     }
 
-    public async answer(driver: WebDriver, question: Question, promotionLink: string) {
-        // 1) 질문 상세 페이지로 이동
+    public async postAnswer(driver: WebDriver, question: Question, promotionLink: string) {
         await driver.get(question.link);
 
-        // 2) [답변하기] 버튼 클릭
         const answerBtn = await driver.wait(
             until.elementLocated(
                 By.css('button.endAnswerButton._answerWriteButton._scrollToEditor')
@@ -75,8 +73,6 @@ export class QuestionService {
         await driver.executeScript('arguments[0].click();', answerBtn);
         await driver.sleep(2_000);
 
-        // 3) LLM으로 답변 생성
-        const detail = question.detailQuestion ?? '';
         const rawAnswer = question.answer
         const finalAnswer = rawAnswer + '\n\n';
         console.log(`📝 생성된 답변:\n${finalAnswer}`);
@@ -113,7 +109,7 @@ export class QuestionService {
         // ─────────────────────────────────────────────────────────────────────────
         // [A] 클립보드에 content 쓰고 붙여넣기
         // ─────────────────────────────────────────────────────────────────────────
-        await clipboardy.write(content);
+        await clipboardy.writeSync(content);
 
         const actions = driver.actions({async: true});
         const isMac = os.platform() === 'darwin';
@@ -126,12 +122,8 @@ export class QuestionService {
             .keyUp(modifierKey)
             .perform();
 
-        // 붙여넣기 완료 대기
         await driver.sleep(1_000);
 
-        // ─────────────────────────────────────────────────────────────────────────
-        // [B] 프로모션 링크를 한 글자씩 타이핑
-        // ─────────────────────────────────────────────────────────────────────────
         for (const ch of promotionLink) {
             // 한 글자씩 sendKeys 후 짧게 대기
             await actions.sendKeys(ch).perform();
