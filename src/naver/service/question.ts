@@ -57,7 +57,7 @@ export class QuestionService {
             until.elementLocated(
                 By.css('button.endAnswerButton._answerWriteButton._scrollToEditor')
             ),
-            5_000
+            QuestionService.DEFAULT_TIMEOUT
         );
         await driver.executeScript('arguments[0].click();', answerBtn);
         await driver.sleep(2_000);
@@ -72,35 +72,23 @@ export class QuestionService {
         console.log('✅ 답변이 정상적으로 제출되었습니다.');
     }
 
-    private async pasteIntoEditor(
-        driver: WebDriver,
-        content: string,
-        promotionLink: string
-    ): Promise<void> {
+    private async pasteIntoEditor(driver: WebDriver, content: string, promotionLink: string): Promise<void> {
         console.log(`📝 생성된 답변:\n${content}`);
         const editorBody = await driver.wait(
             until.elementLocated(By.css('section.se-canvas .se-section-text')),
             QuestionService.DEFAULT_TIMEOUT
         );
-        await driver.executeScript('arguments[0].scrollIntoView(true);', editorBody);
-        await driver.sleep(1_000);
 
+        await driver.executeScript('arguments[0].scrollIntoView(true);', editorBody);
         await driver.executeScript('arguments[0].click();', editorBody);
-        await driver.sleep(500);
 
         // Actions API로 답변 내용 입력
-        const actions = driver.actions({async: false});
+        let actions = driver.actions({async: true});
         await actions.click(editorBody).sendKeys(content).perform();
-        await driver.sleep(500);
-
-        // 링크를 한 글자씩 입력하여 사용자 입력처럼 처리
-        for (const ch of promotionLink) {
-            await actions.sendKeys(ch).pause(50).perform();
-        }
-
-        // 엔터로 OG 미리보기 트리거
         await actions.sendKeys(Key.ENTER).perform();
-        await driver.sleep(10_000);
+
+        let newActions = driver.actions({async: true});
+        newActions.sendKeys(promotionLink).perform();
     }
 
     private ensureAbsoluteUrl(href: string): string {
