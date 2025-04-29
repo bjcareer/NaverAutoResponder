@@ -11,12 +11,13 @@ export class AutoAnswerService {
     /**
      * 질문 목록을 받아서 자동으로 답변을 생성합니다.
      */
-    public async autoAnswer(questions: Question[]): Promise<void> {
-        for (const question of questions) {
+    public async crateAutoAnswer(question: Question): Promise<void> {
             const prompt = this.getPrompt(question.detailQuestion);
             const answer = await this.invokeChatModel(prompt);
             question.addAnswer(answer);
-        }
+
+        console.log(`질문: ${question.detailQuestion}`);
+        console.log(`답변: ${answer}`);
     }
 
     /**
