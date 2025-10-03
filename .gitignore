@@ -143,3 +143,9 @@ dist/
 # Cache directories
 .cache/
 .adpick/
+
+# macOS system files
+.DS_Store
+
+# JetBrains IDE
+.idea/
