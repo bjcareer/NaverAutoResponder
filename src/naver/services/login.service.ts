@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Page } from 'puppeteer-core';
-import { LoggerService } from '@shared/services/logger.service';
+import { LoggerService } from '../../shared/services/logger.service';
 import { LoginDto } from '../dto/login.dto';
 
 @Injectable()

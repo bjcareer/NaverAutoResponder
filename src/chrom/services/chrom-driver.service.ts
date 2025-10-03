@@ -4,7 +4,7 @@ import { Browser, Page } from 'puppeteer-core';
 import puppeteerCore from 'puppeteer-core';
 import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium';
-import { LoggerService } from '@shared/services/logger.service';
+import { LoggerService } from '../../shared/services/logger.service';
 
 @Injectable()
 export class ChromDriverService implements OnModuleDestroy {

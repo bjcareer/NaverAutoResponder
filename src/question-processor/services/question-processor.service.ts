@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChromDriverService } from '@chrom/services/chrom-driver.service';
-import { LoginService } from '@naver/services/login.service';
-import { QuestionService } from '@naver/services/question.service';
-import { AutoAnswerService } from '@llm/services/auto-answer.service';
-import { LoggerService } from '@shared/services/logger.service';
-import { SlackNotificationService } from '@shared/services/slack-notification.service';
-import { LoginDto } from '@naver/dto/login.dto';
-import { QuestionSearchDto } from '@naver/dto/question.dto';
+import { ChromDriverService } from '../../chrom/services/chrom-driver.service';
+import { LoginService } from '../../naver/services/login.service';
+import { QuestionService } from '../../naver/services/question.service';
+import { AutoAnswerService } from '../../llm/services/auto-answer.service';
+import { LoggerService } from '../../shared/services/logger.service';
+import { SlackNotificationService } from '../../shared/services/slack-notification.service';
+import { LoginDto } from '../../naver/dto/login.dto';
+import { QuestionSearchDto } from '../../naver/dto/question.dto';
 
 @Injectable()
 export class QuestionProcessorService {

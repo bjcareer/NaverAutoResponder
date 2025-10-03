@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IncomingWebhook } from '@slack/webhook';
 import { LoggerService } from './logger.service';
-import { Question } from '@naver/domain/Question';
+import { Question } from '../../naver/domain/Question';
 
 @Injectable()
 export class SlackNotificationService {

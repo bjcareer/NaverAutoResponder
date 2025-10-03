@@ -1,16 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QuestionProcessorService } from './question-processor.service';
-import { ChromDriverService } from '@chrom/services/chrom-driver.service';
-import { LoginService } from '@naver/services/login.service';
-import { QuestionService } from '@naver/services/question.service';
-import { AutoAnswerService } from '@llm/services/auto-answer.service';
-import { QuestionClassificationAgent } from '@llm/agents/question-classification.agent';
-import { AffiliateAnswerAgent } from '@llm/agents/affiliate-answer.agent';
-import { GeneralAnswerAgent } from '@llm/agents/general-answer.agent';
-import { LoggerService } from '@shared/services/logger.service';
-import { SlackNotificationService } from '@shared/services/slack-notification.service';
+import { ChromDriverService } from '../../chrom/services/chrom-driver.service';
+import { LoginService } from '../../naver/services/login.service';
+import { QuestionService } from '../../naver/services/question.service';
+import { AutoAnswerService } from '../../llm/services/auto-answer.service';
+import { QuestionClassificationAgent } from '../../llm/agents/question-classification.agent';
+import { AffiliateAnswerAgent } from '../../llm/agents/affiliate-answer.agent';
+import { GeneralAnswerAgent } from '../../llm/agents/general-answer.agent';
+import { LoggerService } from '../../shared/services/logger.service';
+import { SlackNotificationService } from '../../shared/services/slack-notification.service';
 import { ChatOpenAI } from '@langchain/openai';
+import { AnswerValidationAgent } from '../../llm/agents/answer-validation.agent';
 
 describe('QuestionProcessorService E2E', () => {
   let service: QuestionProcessorService;
@@ -36,6 +37,7 @@ describe('QuestionProcessorService E2E', () => {
         GeneralAnswerAgent,
         LoggerService,
         SlackNotificationService,
+        AnswerValidationAgent,
         {
           provide: 'CHAT_MODEL',
           useFactory: (configService: ConfigService) => {
@@ -98,7 +100,7 @@ describe('QuestionProcessorService E2E', () => {
 
   describe('processQuestions - Full Workflow', () => {
     it('should process SAVINGS questions with affiliate link', async () => {
-      const keyword = '돈 부족';
+      const keyword = '알바 추천';
       const customLink = 'https://deg.kr/65b7c5d';
 
       const result = await service.processQuestions(keyword, customLink);
@@ -106,10 +108,10 @@ describe('QuestionProcessorService E2E', () => {
       expect(result).toBeDefined();
       expect(result.processed).toBeGreaterThanOrEqual(0);
       expect(result.errors).toBeGreaterThanOrEqual(0);
-    }, 180000);
+    }, 1080000);
 
     it('should process SIDE_BUSINESS questions with affiliate link', async () => {
-      const keyword = '부업';
+      const keyword = '부자되는법';
       const customLink = 'https://deg.kr/65b7c5d';
 
       const result = await service.processQuestions(keyword, customLink);

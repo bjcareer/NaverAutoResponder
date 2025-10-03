@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Question } from '@naver/domain/Question';
-import { LoggerService } from '@shared/services/logger.service';
+import { Question } from '../../naver/domain/Question';
+import { LoggerService } from '../../shared/services/logger.service';
 import { QuestionClassificationAgent } from '../agents/question-classification.agent';
 import { AffiliateAnswerAgent } from '../agents/affiliate-answer.agent';
 import { GeneralAnswerAgent } from '../agents/general-answer.agent';
+import { AnswerValidationAgent } from '../agents/answer-validation.agent';
 import { ClassificationResult } from '../domain/classification-result';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AutoAnswerService {
     private readonly classificationAgent: QuestionClassificationAgent,
     private readonly affiliateAnswerAgent: AffiliateAnswerAgent,
     private readonly generalAnswerAgent: GeneralAnswerAgent,
+    private readonly validationAgent: AnswerValidationAgent,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
   ) {}
@@ -34,11 +36,14 @@ export class AutoAnswerService {
 
     if(classification.isTarget){
         // Step 2: Generate answer based on classification
-        answer = await this.generateAnswer(
+        const rawAnswer = await this.generateAnswer(
           question.detailQuestion,
           classification,
           affiliateLink,
       );
+
+      // Step 3: Validate and refine answer to remove automated tone
+      answer = await this.validateAnswer(rawAnswer);
 
       question.addAnswer(answer);
     }
@@ -95,6 +100,19 @@ export class AutoAnswerService {
 
       return await this.generalAnswerAgent.generate(questionText);
     }
+  }
+
+  private async validateAnswer(rawAnswer: string): Promise<string> {
+    this.logger.info('AutoAnswerService', 'Validating answer for naturalness');
+
+    const refinedAnswer = await this.validationAgent.validateAndRefine(rawAnswer);
+
+    this.logger.info('AutoAnswerService', 'Answer validation completed', {
+      originalLength: rawAnswer.length,
+      refinedLength: refinedAnswer.length,
+    });
+
+    return refinedAnswer;
   }
 
   /**

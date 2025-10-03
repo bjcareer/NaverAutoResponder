@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 import { decode } from 'html-entities';
 import { QuestionSearchDto } from '../dto/question.dto';
 import { Question } from '../domain/Question';
-import { LoggerService } from '@shared/services/logger.service';
+import { LoggerService } from '../../shared/services/logger.service';
 
 @Injectable()
 export class QuestionService {
