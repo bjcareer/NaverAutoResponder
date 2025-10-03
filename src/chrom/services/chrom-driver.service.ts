@@ -1,48 +1,68 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { Builder, ThenableWebDriver, WebDriver } from 'selenium-webdriver';
-import chrome from 'selenium-webdriver/chrome';
+import { Browser, Page } from 'puppeteer-core';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { LoggerService } from '@shared/services/logger.service';
 
 @Injectable()
 export class ChromDriverService implements OnModuleDestroy {
-  private driver: WebDriver | null = null;
-  private chromeOptions: chrome.Options;
+  private browser: Browser | null = null;
 
-  constructor(private readonly logger: LoggerService) {
-    this.chromeOptions = new chrome.Options();
-    this.chromeOptions.addArguments('--disable-blink-features=AutomationControlled');
-    this.chromeOptions.addArguments('--no-sandbox');
-    this.chromeOptions.addArguments('--disable-dev-shm-usage');
-    this.chromeOptions.excludeSwitches('enable-automation');
-  }
+  constructor(private readonly logger: LoggerService) {}
 
-  async createDriver(): Promise<ThenableWebDriver> {
-    if (this.driver) {
-      return this.driver as ThenableWebDriver;
+  async getBrowser(): Promise<Browser> {
+    if (this.browser && this.browser.isConnected()) {
+      return this.browser;
     }
 
-    this.logger.info('ChromDriverService', 'Creating Chrome WebDriver');
+    this.logger.info('ChromDriverService', 'Creating Puppeteer Browser');
 
-    this.driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(this.chromeOptions)
-      .build();
+    const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 
-    return this.driver as ThenableWebDriver;
+    if (isLambda) {
+      // Lambda environment
+      this.browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      });
+    } else {
+      // Local development environment
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--disable-blink-features=AutomationControlled',
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+        ],
+        ignoreHTTPSErrors: true,
+      });
+    }
+
+    this.logger.info('ChromDriverService', 'Browser created successfully');
+    return this.browser;
   }
 
-  async getDriver(): Promise<WebDriver> {
-    if (!this.driver) {
-      return this.createDriver();
-    }
-    return this.driver;
+  async createPage(): Promise<Page> {
+    const browser = await this.getBrowser();
+    const page = await browser.newPage();
+
+    // Set user agent to avoid detection
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
+
+    return page;
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.driver) {
-      this.logger.info('ChromDriverService', 'Closing WebDriver');
-      await this.driver.quit();
-      this.driver = null;
+    if (this.browser) {
+      this.logger.info('ChromDriverService', 'Closing Browser');
+      await this.browser.close();
+      this.browser = null;
     }
   }
 }
