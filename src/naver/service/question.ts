@@ -1,8 +1,9 @@
 import {By, Key, until, WebDriver} from 'selenium-webdriver';
 import * as cheerio from 'cheerio';
 import {decode} from 'html-entities';
-import {QuestionCommand} from '../in/questionCommand';
-import {Question} from '../domain/Question';
+import {QuestionCommand} from '@naver/in/questionCommand';
+import {Question} from '@naver/domain/Question';
+import {logger} from '@shared/utils/logger';
 
 export class QuestionService {
     private static readonly baseUrl = 'https://kin.naver.com';
@@ -69,11 +70,11 @@ export class QuestionService {
             QuestionService.DEFAULT_TIMEOUT
         );
         await driver.executeScript('arguments[0].click();', submitBtn);
-        console.log('✅ 답변이 정상적으로 제출되었습니다.');
+        logger.info('답변이 정상적으로 제출되었습니다.');
     }
 
     private async pasteIntoEditor(driver: WebDriver, content: string, promotionLink: string): Promise<void> {
-        console.log(`📝 생성된 답변:\n${content}`);
+        logger.info('생성된 답변', { content });
         const editorBody = await driver.wait(
             until.elementLocated(By.css('section.se-canvas .se-section-text')),
             QuestionService.DEFAULT_TIMEOUT

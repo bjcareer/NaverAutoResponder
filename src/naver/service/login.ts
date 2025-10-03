@@ -1,6 +1,7 @@
-import {LoginCommand} from "../in/loginCommand";
+import {LoginCommand} from "@naver/in/loginCommand";
 import clipboardy from "clipboardy";
 import {By, Key, until, WebDriver} from "selenium-webdriver";
+import {logger} from '@shared/utils/logger';
 
 export class Login {
     public static readonly LOGIN_URL = 'https://nid.naver.com/nidlogin.login';
@@ -15,7 +16,7 @@ export class Login {
      * 네이버 로그인 수행 (CAPTCHA 대응: 복사-붙여넣기 사용)
      */
     async login(command: LoginCommand, driver: WebDriver): Promise<void> {
-        console.log(`Logging in with username: ${command.username}`);
+        logger.info('네이버 로그인 시작', { username: command.username });
 
         await driver.get(Login.LOGIN_URL);
         await driver.wait(until.elementLocated(By.xpath(Login.ID_XPATH)), 10000);
@@ -54,9 +55,9 @@ export class Login {
             );
             await driver.wait(until.elementIsVisible(dontSaveBtn), 5000);
             await dontSaveBtn.click();
-            console.log("✅ [등록안함] 버튼 클릭 완료");
+            logger.info('[등록안함] 버튼 클릭 완료');
         } catch (e) {
-            console.warn("⚠️ [등록안함] 버튼이 없습니다.");
+            logger.warn('[등록안함] 버튼이 없습니다.');
         }
     }
 }

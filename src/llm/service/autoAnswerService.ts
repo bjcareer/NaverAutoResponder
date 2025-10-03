@@ -3,7 +3,8 @@
 import {ChatOpenAI} from "@langchain/openai";
 import {LLMChain} from "langchain/chains";
 import {ChatPromptTemplate} from "@langchain/core/prompts";
-import {Question} from "../../naver/domain/Question";
+import {Question} from "@naver/domain/Question";
+import {logger} from '@shared/utils/logger';
 
 export class AutoAnswerService {
     constructor(private readonly _chatModel: ChatOpenAI) {}
@@ -16,8 +17,10 @@ export class AutoAnswerService {
             const answer = await this.invokeChatModel(prompt);
             question.addAnswer(answer);
 
-        console.log(`질문: ${question.detailQuestion}`);
-        console.log(`답변: ${answer}`);
+        logger.info('AI 답변 생성 완료', {
+            question: question.detailQuestion,
+            answer
+        });
     }
 
     /**

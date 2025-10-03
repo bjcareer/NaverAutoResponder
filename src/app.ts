@@ -1,10 +1,11 @@
-import {ChromDriver} from "./chrom/utils/chromDriver";
-import {Login} from "./naver/service/login";
-import {LoginCommand} from "./naver/in/loginCommand";
-import {QuestionService} from "./naver/service/question";
-import {QuestionCommand} from "./naver/in/questionCommand";
+import {ChromDriver} from "@chrom/utils/chromDriver";
+import {Login} from "@naver/service/login";
+import {LoginCommand} from "@naver/in/loginCommand";
+import {QuestionService} from "@naver/service/question";
+import {QuestionCommand} from "@naver/in/questionCommand";
 import {ChatOpenAI} from "@langchain/openai";
-import {AutoAnswerService} from "./llm/service/autoAnswerService";
+import {AutoAnswerService} from "@llm/service/autoAnswerService";
+import {logger} from '@shared/utils/logger';
 
 require('dotenv').config();
 
@@ -47,6 +48,6 @@ async function main(): Promise<void> {
 
 // 에러를 잡아내고 프로세스 종료 코드도 설정
 main().catch((err) => {
-    console.error('Error in main():', err);
+    logger.error('애플리케이션 실행 중 오류 발생', err);
     process.exit(1);
 });
