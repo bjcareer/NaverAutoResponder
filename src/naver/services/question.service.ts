@@ -44,19 +44,66 @@ export class QuestionService {
   }
 
   async getQuestionDetail(page: Page, question: Question): Promise<void> {
-    await page.goto(question.link, { waitUntil: 'networkidle2' });
-    await page.waitForSelector('div.questionDetail', { timeout: QuestionService.DEFAULT_TIMEOUT });
+    const maxRetries = 3;
+    let lastError: Error | null = null;
 
-    const html = await page.content();
-    const $ = cheerio.load(html);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Navigate with timeout and proper wait
+        await page.goto(question.link, {
+          waitUntil: 'networkidle2',
+          timeout: QuestionService.DEFAULT_TIMEOUT,
+        });
 
-    const $detail = $('div.questionDetail').first();
-    const detailText = $detail.length
-      ? $detail.text().trim()
-      : '질문 내용을 찾지 못했습니다.';
+        // Wait for question detail to appear
+        await page.waitForSelector('div.questionDetail', {
+          timeout: QuestionService.DEFAULT_TIMEOUT,
+        });
 
-    question.addDetailQuestion(detailText);
-    this.logger.info('QuestionService', `Loaded question detail: ${question.title}`);
+        const html = await page.content();
+        const $ = cheerio.load(html);
+
+        const $detail = $('div.questionDetail').first();
+        const detailText = $detail.length
+          ? $detail.text().trim()
+          : '질문 내용을 찾지 못했습니다.';
+
+        question.addDetailQuestion(detailText);
+        this.logger.info('QuestionService', `Loaded question detail: ${question.title}`);
+        return; // Success, exit retry loop
+      } catch (error) {
+        lastError = error as Error;
+        const errorMessage = (error as Error).message;
+        this.logger.warn(
+          'QuestionService',
+          `Failed to load question detail (attempt ${attempt}/${maxRetries}): ${errorMessage}`,
+        );
+
+        if (attempt < maxRetries) {
+          // Wait before retry (exponential backoff)
+          const waitTime = 1000 * attempt;
+          this.logger.info(
+            'QuestionService',
+            `Retrying after ${waitTime}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+          // Check if page is still valid, if not recreate
+          const errorMessage = lastError?.message || '';
+          if (errorMessage.includes('detached')) {
+            this.logger.warn(
+              'QuestionService',
+              'Page detached, attempting to continue with new navigation',
+            );
+          }
+        }
+      }
+    }
+
+    // All retries failed
+    throw new Error(
+      `Failed to load question detail after ${maxRetries} attempts: ${lastError?.message}`,
+    );
   }
 
   async postAnswer(
