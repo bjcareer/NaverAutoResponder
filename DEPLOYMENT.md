@@ -37,8 +37,8 @@ pulumi config set --secret naverPw "your-naver-password"
 # OpenAI API Key
 pulumi config set --secret openaiApiKey "your-openai-api-key"
 
-# OpenAI Model (optional, default: gpt-4o-mini)
-pulumi config set openaiModel "gpt-4o-mini"
+# OpenAI Model (optional, default: gpt-5-mini)
+pulumi config set openaiModel "gpt-5-mini"
 ```
 
 ### 3. Lambda 패키지 빌드

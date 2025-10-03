@@ -43,11 +43,14 @@ export class QuestionProcessorService {
       for (const question of questions) {
         try {
           await this.questionService.getQuestionDetail(page, question);
-          await this.autoAnswerService.createAutoAnswer(question);
+
+          const affiliateLink = promotionLink || this.configService.get<string>('AFFILIATE_LINK') || 'https://adpick.co.kr/track/xxxxxx';
+          await this.autoAnswerService.createAutoAnswer(question, affiliateLink);
+
           await this.questionService.postAnswer(
             page,
             question,
-            promotionLink || 'https://next-stock.com/'
+            affiliateLink
           );
 
           processed++;
