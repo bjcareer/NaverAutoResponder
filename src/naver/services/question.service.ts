@@ -157,9 +157,6 @@ export class QuestionService {
     // Type answer content
     await page.keyboard.type(content, { delay: 50 });
     await page.keyboard.press('Enter');
-
-    // Type promotion link
-    await page.keyboard.type(promotionLink, { delay: 50 });
   }
 
   private ensureAbsoluteUrl(href: string): string {
