@@ -4,6 +4,7 @@ import { AutoAnswerService } from './services/auto-answer.service';
 import { QuestionClassificationAgent } from './agents/question-classification.agent';
 import { AffiliateAnswerAgent } from './agents/affiliate-answer.agent';
 import { GeneralAnswerAgent } from './agents/general-answer.agent';
+import { AnswerValidationAgent } from './agents/answer-validation.agent';
 import { ChatOpenAI } from '@langchain/openai';
 
 @Module({
@@ -29,6 +30,7 @@ import { ChatOpenAI } from '@langchain/openai';
     QuestionClassificationAgent,
     AffiliateAnswerAgent,
     GeneralAnswerAgent,
+    AnswerValidationAgent,
     AutoAnswerService,
   ],
   exports: [AutoAnswerService],

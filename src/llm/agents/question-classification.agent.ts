@@ -47,6 +47,7 @@ isTarget = true 조건:
 - 재테크, 투자 방법 고민 및 추천 요청
 - 금융 상품 비교 및 선택 고민
 - 돈 벌기, 수익 창출 방법 문의
+- 알바, 아르바이트 추천 요청 (시급/돈 벌기가 목적)
 
 isTarget = false 조건:
 - 위 키워드가 포함되어도 실제 추천 요청이 아닌 경우
@@ -59,6 +60,7 @@ isTarget = false 조건:
 - SAVINGS: 적금/예금/저축 관련
 - SIDE_BUSINESS: 부업/투잡/사이드잡 관련 (금전적 수익 창출이 명확한 목적)
 - INVESTMENT: 재테크/투자 관련
+- PART_TIME_JOB: 알바/아르바이트 추천 관련 (시급, 단기 수입이 목적)
 - GENERAL: 위 카테고리에 해당하지 않음
 
 【Few-shot 예시】
@@ -72,18 +74,26 @@ isTarget = false 조건:
 분류: {{"isTarget": true, "category": "SAVINGS", "confidence": 0.95, "reasoning": "적금 상품 추천 요청"}}
 
 예시 3:
+질문: "대학생인데 시급 괜찮은 알바 추천해주세요"
+분류: {{"isTarget": true, "category": "PART_TIME_JOB", "confidence": 0.95, "reasoning": "알바 추천 요청, 시급 목적"}}
+
+예시 4:
+질문: "집에서 할 수 있는 재택 알바 없을까요?"
+분류: {{"isTarget": true, "category": "PART_TIME_JOB", "confidence": 0.9, "reasoning": "재택 알바 추천 요청"}}
+
+예시 5:
 질문: "주식 vs 펀드 어디에 투자하는게 나을까요?"
 분류: {{"isTarget": true, "category": "INVESTMENT", "confidence": 0.9, "reasoning": "투자 방법 추천 요청"}}
 
-예시 4:
+예시 6:
 질문: "클래식 기타 배워서 유튜브 찍으려는데 어떤가요?"
 분류: {{"isTarget": false, "category": "GENERAL", "confidence": 0.85, "reasoning": "취미와 자기개발 목적, 금전적 수익이 주목적 아님"}}
 
-예시 5:
+예시 7:
 질문: "재테크 공부하려고 하는데 책 추천 부탁드려요"
 분류: {{"isTarget": false, "category": "GENERAL", "confidence": 0.8, "reasoning": "재테크 키워드는 있지만 책 추천 요청으로 상품 추천 아님"}}
 
-예시 6:
+예시 8:
 질문: "퇴근 후 시간 활용해서 부업 하고 싶은데 뭐가 좋을까요"
 분류: {{"isTarget": true, "category": "SIDE_BUSINESS", "confidence": 0.9, "reasoning": "부업으로 수익 창출 목적 명확"}}
 

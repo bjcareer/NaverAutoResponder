@@ -2,6 +2,7 @@ export enum QuestionCategory {
   SAVINGS = 'SAVINGS', // 적금 관련
   SIDE_BUSINESS = 'SIDE_BUSINESS', // 부업 관련
   INVESTMENT = 'INVESTMENT', // 재테크 관련
+  PART_TIME_JOB = 'PART_TIME_JOB', // 알바 추천 관련
   GENERAL = 'GENERAL', // 일반 질문
 }
 
