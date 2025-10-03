@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { By, Key, until, WebDriver } from 'selenium-webdriver';
+import { Page } from 'puppeteer-core';
 import * as cheerio from 'cheerio';
 import { decode } from 'html-entities';
 import { QuestionSearchDto } from '../dto/question.dto';
@@ -18,12 +18,12 @@ export class QuestionService {
 
   async getQuestions(
     searchDto: QuestionSearchDto,
-    driver: WebDriver
+    page: Page
   ): Promise<Question[]> {
     const result: Question[] = [];
     const url = `${QuestionService.baseUrl}/search/list.naver?query=${encodeURIComponent(searchDto.query)}&sort=date&section=qna`;
 
-    const pageSource = await this.openQuestionPage(driver, url);
+    const pageSource = await this.openQuestionPage(page, url);
     const $ = cheerio.load(pageSource);
 
     $(QuestionService.ITEM_SELECTOR).each((_, elem) => {
@@ -43,14 +43,11 @@ export class QuestionService {
     return result;
   }
 
-  async getQuestionDetail(driver: WebDriver, question: Question): Promise<void> {
-    await driver.get(question.link);
-    await driver.wait(
-      until.elementLocated(By.css('div.questionDetail')),
-      QuestionService.DEFAULT_TIMEOUT
-    );
+  async getQuestionDetail(page: Page, question: Question): Promise<void> {
+    await page.goto(question.link, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('div.questionDetail', { timeout: QuestionService.DEFAULT_TIMEOUT });
 
-    const html = await driver.getPageSource();
+    const html = await page.content();
     const $ = cheerio.load(html);
 
     const $detail = $('div.questionDetail').first();
@@ -63,51 +60,59 @@ export class QuestionService {
   }
 
   async postAnswer(
-    driver: WebDriver,
+    page: Page,
     question: Question,
     promotionLink: string
   ): Promise<void> {
-    await driver.get(question.link);
+    await page.goto(question.link, { waitUntil: 'networkidle2' });
 
-    const answerBtn = await driver.wait(
-      until.elementLocated(
-        By.css('button.endAnswerButton._answerWriteButton._scrollToEditor')
-      ),
-      QuestionService.DEFAULT_TIMEOUT
-    );
-    await driver.executeScript('arguments[0].click();', answerBtn);
-    await driver.sleep(2_000);
+    await page.waitForSelector('button.endAnswerButton._answerWriteButton._scrollToEditor', {
+      timeout: QuestionService.DEFAULT_TIMEOUT
+    });
 
-    await this.pasteIntoEditor(driver, question.answer || '', promotionLink);
+    await page.click('button.endAnswerButton._answerWriteButton._scrollToEditor');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const submitBtn = await driver.wait(
-      until.elementLocated(By.id('answerRegisterButton')),
-      QuestionService.DEFAULT_TIMEOUT
-    );
-    await driver.executeScript('arguments[0].click();', submitBtn);
+    await this.pasteIntoEditor(page, question.answer || '', promotionLink);
+
+    await page.waitForSelector('#answerRegisterButton', {
+      timeout: QuestionService.DEFAULT_TIMEOUT
+    });
+
+    await page.click('#answerRegisterButton');
     this.logger.info('QuestionService', 'Answer posted successfully');
   }
 
   private async pasteIntoEditor(
-    driver: WebDriver,
+    page: Page,
     content: string,
     promotionLink: string
   ): Promise<void> {
     this.logger.info('QuestionService', 'Pasting answer into editor', { content });
-    const editorBody = await driver.wait(
-      until.elementLocated(By.css('section.se-canvas .se-section-text')),
-      QuestionService.DEFAULT_TIMEOUT
-    );
 
-    await driver.executeScript('arguments[0].scrollIntoView(true);', editorBody);
-    await driver.executeScript('arguments[0].click();', editorBody);
+    await page.waitForSelector('section.se-canvas .se-section-text', {
+      timeout: QuestionService.DEFAULT_TIMEOUT
+    });
 
-    let actions = driver.actions({ async: true });
-    await actions.click(editorBody).sendKeys(content).perform();
-    await actions.sendKeys(Key.ENTER).perform();
+    const editorSelector = 'section.se-canvas .se-section-text';
 
-    let newActions = driver.actions({ async: true });
-    await newActions.sendKeys(promotionLink).perform();
+    // Scroll into view and click
+    await page.evaluate((selector) => {
+      const element = document.querySelector(selector);
+      if (element) {
+        element.scrollIntoView(true);
+      }
+    }, editorSelector);
+
+    await page.click(editorSelector);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Type answer content
+    await page.keyboard.type(content, { delay: 50 });
+    await page.keyboard.press('Enter');
+
+    // Type promotion link
+    await page.keyboard.type(promotionLink, { delay: 50 });
   }
 
   private ensureAbsoluteUrl(href: string): string {
@@ -126,26 +131,22 @@ export class QuestionService {
     return match ? parseInt(match[0], 10) : 0;
   }
 
-  private async openQuestionPage(driver: WebDriver, url: string): Promise<string> {
-    await driver.get(url);
+  private async openQuestionPage(page: Page, url: string): Promise<string> {
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     // Wait for page to fully load
-    await driver.wait(
-      async () => {
-        const readyState = await driver.executeScript('return document.readyState');
-        return readyState === 'complete';
-      },
-      QuestionService.DEFAULT_TIMEOUT
+    await page.waitForFunction(
+      () => document.readyState === 'complete',
+      { timeout: QuestionService.DEFAULT_TIMEOUT }
     );
 
-    await driver.wait(
-      until.elementLocated(By.css(QuestionService.ITEM_SELECTOR)),
-      QuestionService.DEFAULT_TIMEOUT
-    );
+    await page.waitForSelector(QuestionService.ITEM_SELECTOR, {
+      timeout: QuestionService.DEFAULT_TIMEOUT
+    });
 
     // Additional wait for dynamic content
-    await driver.sleep(1000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    return await driver.getPageSource();
+    return await page.content();
   }
 }

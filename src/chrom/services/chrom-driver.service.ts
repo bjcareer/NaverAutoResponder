@@ -23,10 +23,8 @@ export class ChromDriverService implements OnModuleDestroy {
       // Lambda environment
       this.browser = await puppeteer.launch({
         args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-        ignoreHTTPSErrors: true,
+        headless: true,
       });
     } else {
       // Local development environment
@@ -38,7 +36,6 @@ export class ChromDriverService implements OnModuleDestroy {
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
         ],
-        ignoreHTTPSErrors: true,
       });
     }
 
