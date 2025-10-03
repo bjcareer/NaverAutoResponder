@@ -1,0 +1,77 @@
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ChromDriverService } from '@chrom/services/chrom-driver.service';
+import { LoginService } from '@naver/services/login.service';
+import { QuestionService } from '@naver/services/question.service';
+import { AutoAnswerService } from '@llm/services/auto-answer.service';
+import { LoggerService } from '@shared/services/logger.service';
+import { LoginDto } from '@naver/dto/login.dto';
+import { QuestionSearchDto } from '@naver/dto/question.dto';
+
+@Injectable()
+export class QuestionProcessorService {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly chromDriver: ChromDriverService,
+    private readonly loginService: LoginService,
+    private readonly questionService: QuestionService,
+    private readonly autoAnswerService: AutoAnswerService,
+    private readonly logger: LoggerService
+  ) {}
+
+  async processQuestions(
+    keyword: string,
+    promotionLink?: string
+  ): Promise<{ processed: number; errors: number }> {
+    let processed = 0;
+    let errors = 0;
+
+    try {
+      const driver = await this.chromDriver.getDriver();
+
+      const loginDto: LoginDto = {
+        username: this.configService.get<string>('NAVER_ID')!,
+        password: this.configService.get<string>('NAVER_PW')!,
+      };
+      await this.loginService.login(loginDto, driver);
+
+      const searchDto: QuestionSearchDto = { query: keyword };
+      const questions = await this.questionService.getQuestions(searchDto, driver);
+
+      this.logger.info('QuestionProcessorService', `Found ${questions.length} questions`);
+
+      for (const question of questions) {
+        try {
+          await this.questionService.getQuestionDetail(driver, question);
+          await this.autoAnswerService.createAutoAnswer(question);
+          await this.questionService.postAnswer(
+            driver,
+            question,
+            promotionLink || 'https://next-stock.com/'
+          );
+
+          processed++;
+          this.logger.info('QuestionProcessorService', `Processed question: ${question.title}`);
+
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        } catch (error) {
+          errors++;
+          this.logger.error(
+            'QuestionProcessorService',
+            `Failed to process question: ${question.title}`,
+            error instanceof Error ? error.stack : String(error)
+          );
+        }
+      }
+
+      return { processed, errors };
+    } catch (error) {
+      this.logger.error(
+        'QuestionProcessorService',
+        'Fatal error in processQuestions',
+        error instanceof Error ? error.stack : String(error)
+      );
+      throw error;
+    }
+  }
+}
