@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "nest build",
+    "build:lambda": "./scripts/build-lambda.sh",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "start": "nest start",
@@ -26,8 +27,11 @@
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.7",
     "@nestjs/testing": "^11.1.6",
+    "@pulumi/aws": "^7.7.0",
+    "@pulumi/pulumi": "^3.199.0",
     "@types/aws-lambda": "^8.10.153",
     "@types/cheerio": "^0.22.35",
+    "@types/express": "^5.0.3",
     "@types/html-entities": "^1.3.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.15.2",
@@ -47,6 +51,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.901.0",
     "@codegenie/serverless-express": "^4.17.0",
     "@langchain/openai": "^0.5.7",
     "@nestjs/common": "^11.1.6",
