@@ -30,15 +30,18 @@ export class AutoAnswerService {
       question.detailQuestion,
     );
 
-    // Step 2: Generate answer based on classification
-    const answer = await this.generateAnswer(
-      question.detailQuestion,
-      classification,
-      affiliateLink,
-    );
+    let answer = ""
 
-    // Step 3: Add answer to question entity
-    question.addAnswer(answer);
+    if(classification.isTarget){
+        // Step 2: Generate answer based on classification
+        answer = await this.generateAnswer(
+          question.detailQuestion,
+          classification,
+          affiliateLink,
+      );
+
+      question.addAnswer(answer);
+    }
 
     this.logger.info('AutoAnswerService', 'Answer generated successfully', {
       isTarget: classification.isTarget,
