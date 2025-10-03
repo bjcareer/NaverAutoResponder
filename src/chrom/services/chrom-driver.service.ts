@@ -1,6 +1,8 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Browser, Page } from 'puppeteer-core';
-import puppeteer from 'puppeteer-core';
+import puppeteerCore from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium';
 import { LoggerService } from '@shared/services/logger.service';
 
@@ -8,7 +10,10 @@ import { LoggerService } from '@shared/services/logger.service';
 export class ChromDriverService implements OnModuleDestroy {
   private browser: Browser | null = null;
 
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: LoggerService
+  ) {}
 
   async getBrowser(): Promise<Browser> {
     if (this.browser && this.browser.isConnected()) {
@@ -18,18 +23,20 @@ export class ChromDriverService implements OnModuleDestroy {
     this.logger.info('ChromDriverService', 'Creating Puppeteer Browser');
 
     const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+    const headless = this.configService.get<string>('HEADLESS', 'true') === 'true';
 
     if (isLambda) {
-      // Lambda environment
-      this.browser = await puppeteer.launch({
+      // Lambda environment with puppeteer-core
+      this.browser = await puppeteerCore.launch({
         args: chromium.args,
         executablePath: await chromium.executablePath(),
-        headless: true,
+        headless: true, // Always headless in Lambda
       });
     } else {
-      // Local development environment
+      // Local development environment with full puppeteer
+      this.logger.info('ChromDriverService', `Launching browser with headless=${headless}`);
       this.browser = await puppeteer.launch({
-        headless: true,
+        headless: headless,
         args: [
           '--disable-blink-features=AutomationControlled',
           '--no-sandbox',

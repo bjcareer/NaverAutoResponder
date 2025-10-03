@@ -45,7 +45,13 @@ export class QuestionProcessorService {
           await this.questionService.getQuestionDetail(page, question);
 
           const affiliateLink = promotionLink || this.configService.get<string>('AFFILIATE_LINK') || 'https://adpick.co.kr/track/xxxxxx';
-          await this.autoAnswerService.createAutoAnswer(question, affiliateLink);
+          const classification = await this.autoAnswerService.createAutoAnswer(question, affiliateLink);
+
+          // Skip GENERAL category questions
+          if (!classification.isTarget) {
+            this.logger.info('QuestionProcessorService', `Skipping GENERAL question: ${question.title}`);
+            continue;
+          }
 
           await this.questionService.postAnswer(
             page,
