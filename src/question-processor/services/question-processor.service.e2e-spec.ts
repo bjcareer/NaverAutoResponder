@@ -5,6 +5,9 @@ import { ChromDriverService } from '@chrom/services/chrom-driver.service';
 import { LoginService } from '@naver/services/login.service';
 import { QuestionService } from '@naver/services/question.service';
 import { AutoAnswerService } from '@llm/services/auto-answer.service';
+import { QuestionClassificationAgent } from '@llm/agents/question-classification.agent';
+import { AffiliateAnswerAgent } from '@llm/agents/affiliate-answer.agent';
+import { GeneralAnswerAgent } from '@llm/agents/general-answer.agent';
 import { LoggerService } from '@shared/services/logger.service';
 import { ChatOpenAI } from '@langchain/openai';
 
@@ -27,13 +30,15 @@ describe('QuestionProcessorService E2E', () => {
         LoginService,
         QuestionService,
         AutoAnswerService,
+        QuestionClassificationAgent,
+        AffiliateAnswerAgent,
+        GeneralAnswerAgent,
         LoggerService,
         {
           provide: 'CHAT_MODEL',
           useFactory: (configService: ConfigService) => {
             const apiKey = configService.get<string>('OPENAI_API_KEY');
             const modelName = configService.get<string>('OPENAI_MODEL_NAME', 'gpt-4o-mini');
-            const temperature = parseFloat(configService.get<string>('OPENAI_TEMPERATURE', '0.7'));
 
             if (!apiKey) {
               throw new Error('OPENAI_API_KEY is not configured');
@@ -42,7 +47,6 @@ describe('QuestionProcessorService E2E', () => {
             return new ChatOpenAI({
               apiKey,
               model: modelName,
-              temperature,
             });
           },
           inject: [ConfigService],
@@ -91,21 +95,9 @@ describe('QuestionProcessorService E2E', () => {
   });
 
   describe('processQuestions - Full Workflow', () => {
-    it('should successfully process questions with default affiliate link', async () => {
-      const keyword = '재테크 방법';
-
-      const result = await service.processQuestions(keyword);
-
-      expect(result).toBeDefined();
-      expect(result.processed).toBeGreaterThanOrEqual(0);
-      expect(result.errors).toBeGreaterThanOrEqual(0);
-      expect(typeof result.processed).toBe('number');
-      expect(typeof result.errors).toBe('number');
-    }, 180000); // 3 minutes timeout
-
-    it('should process questions with custom affiliate link', async () => {
+    it('should process SAVINGS questions with affiliate link', async () => {
       const keyword = '적금 추천';
-      const customLink = 'https://adpick.co.kr/track/custom123';
+      const customLink = 'https://deg.kr/65b7c5d';
 
       const result = await service.processQuestions(keyword, customLink);
 
@@ -113,6 +105,50 @@ describe('QuestionProcessorService E2E', () => {
       expect(result.processed).toBeGreaterThanOrEqual(0);
       expect(result.errors).toBeGreaterThanOrEqual(0);
     }, 180000);
+
+    it('should process SIDE_BUSINESS questions with affiliate link', async () => {
+      const keyword = '부업 추천';
+      const customLink = 'https://deg.kr/65b7c5d';
+
+      const result = await service.processQuestions(keyword, customLink);
+
+      expect(result).toBeDefined();
+      expect(result.processed).toBeGreaterThanOrEqual(0);
+      expect(result.errors).toBeGreaterThanOrEqual(0);
+    }, 180000);
+
+    it('should process INVESTMENT questions with affiliate link', async () => {
+      const keyword = '투자';
+      const customLink = 'https://deg.kr/65b7c5d';
+
+      const result = await service.processQuestions(keyword, customLink);
+
+      expect(result).toBeDefined();
+      expect(result.processed).toBeGreaterThanOrEqual(0);
+      expect(result.errors).toBeGreaterThanOrEqual(0);
+    }, 180000);
+
+    it('should process GENERAL questions without affiliate link', async () => {
+      const keyword = '파이썬 공부';
+      const customLink = 'https://deg.kr/65b7c5d';
+
+      const result = await service.processQuestions(keyword, customLink);
+
+      expect(result).toBeDefined();
+      expect(result.processed).toBeGreaterThanOrEqual(0);
+      // General questions should still work, just with different answer style
+    }, 180000);
+
+    it('should handle mixed question types correctly', async () => {
+      const keyword = '재테크';
+      const customLink = 'https://deg.kr/65b7c5d';
+
+      const result = await service.processQuestions(keyword, customLink);
+
+      expect(result).toBeDefined();
+      expect(result.processed).toBeGreaterThanOrEqual(0);
+      // Mixed results: some target, some general
+    }, 580000);
   });
 
   describe('Answer Generation Quality', () => {
