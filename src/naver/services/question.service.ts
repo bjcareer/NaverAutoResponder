@@ -128,10 +128,24 @@ export class QuestionService {
 
   private async openQuestionPage(driver: WebDriver, url: string): Promise<string> {
     await driver.get(url);
+
+    // Wait for page to fully load
+    await driver.wait(
+      async () => {
+        const readyState = await driver.executeScript('return document.readyState');
+        return readyState === 'complete';
+      },
+      QuestionService.DEFAULT_TIMEOUT
+    );
+
     await driver.wait(
       until.elementLocated(By.css(QuestionService.ITEM_SELECTOR)),
       QuestionService.DEFAULT_TIMEOUT
     );
+
+    // Additional wait for dynamic content
+    await driver.sleep(1000);
+
     return await driver.getPageSource();
   }
 }
