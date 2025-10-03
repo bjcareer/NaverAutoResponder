@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+cache/
+claudedocs/
+*.js
+*.d.ts
+.env
+.DS_Store
+coverage/
+.idea/
+.vscode/
