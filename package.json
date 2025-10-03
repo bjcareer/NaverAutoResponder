@@ -59,6 +59,7 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.6",
     "@nestjs/platform-express": "^11.1.6",
+    "@slack/webhook": "^7.0.6",
     "@sparticuz/chromium": "^140.0.0",
     "aws-lambda": "^1.0.7",
     "cheerio": "^1.0.0",
