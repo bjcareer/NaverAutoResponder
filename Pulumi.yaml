@@ -1,0 +1,3 @@
+name: naver-auto-responder
+runtime: nodejs
+description: Naver Question Auto Responder Lambda Service
