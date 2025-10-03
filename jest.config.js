@@ -6,6 +6,7 @@ module.exports = {
     '**/__tests__/**/*.ts',
     '**/*.test.ts',
     '**/*.spec.ts',
+    '**/*.e2e-spec.ts',
     '**/test/**/*.e2e-spec.ts'
   ],
   moduleNameMapper: {
