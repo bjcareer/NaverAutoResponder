@@ -57,7 +57,7 @@ Selenium WebDriver(Chromium) 기반의 브라우저 제어와 Cheerio 기반의 
 
 ## 사전 준비
 
-- Node.js v14 이상
+- Node.js v20 이상
 - npm 또는 pnpm
 - Chrome 또는 Chromium 브라우저 설치
 

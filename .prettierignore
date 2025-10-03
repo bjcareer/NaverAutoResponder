@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+cache/
+claudedocs/
+*.min.js
+*.bundle.js
+coverage/
+.env
+package-lock.json
