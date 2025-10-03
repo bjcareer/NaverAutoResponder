@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AutoAnswerService } from './services/auto-answer.service';
+import { QuestionClassificationAgent } from './agents/question-classification.agent';
+import { AffiliateAnswerAgent } from './agents/affiliate-answer.agent';
+import { GeneralAnswerAgent } from './agents/general-answer.agent';
 import { ChatOpenAI } from '@langchain/openai';
 
 @Module({
   providers: [
-    AutoAnswerService,
     {
       provide: 'CHAT_MODEL',
       useFactory: (configService: ConfigService) => {
@@ -14,22 +16,20 @@ import { ChatOpenAI } from '@langchain/openai';
           throw new Error('OPENAI_API_KEY environment variable is required');
         }
 
-        const modelName = configService.get<string>('OPENAI_MODEL_NAME') || 'gpt-5-mini';
-        const temperatureStr = configService.get<string>('OPENAI_TEMPERATURE') || '0.7';
-        const temperature = parseFloat(temperatureStr);
-
-        if (isNaN(temperature)) {
-          throw new Error('OPENAI_TEMPERATURE must be a valid number');
-        }
+        const modelName = configService.get<string>('OPENAI_MODEL_NAME') || 'gpt-4o-mini';
 
         return new ChatOpenAI({
           apiKey,
           model: modelName,
-          temperature,
+          // temperature는 모델 기본값 사용 (gpt-4o-mini의 경우 1.0)
         });
       },
       inject: [ConfigService],
     },
+    QuestionClassificationAgent,
+    AffiliateAnswerAgent,
+    GeneralAnswerAgent,
+    AutoAnswerService,
   ],
   exports: [AutoAnswerService],
 })
