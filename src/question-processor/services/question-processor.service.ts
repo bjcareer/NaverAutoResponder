@@ -5,6 +5,7 @@ import { LoginService } from '@naver/services/login.service';
 import { QuestionService } from '@naver/services/question.service';
 import { AutoAnswerService } from '@llm/services/auto-answer.service';
 import { LoggerService } from '@shared/services/logger.service';
+import { SlackNotificationService } from '@shared/services/slack-notification.service';
 import { LoginDto } from '@naver/dto/login.dto';
 import { QuestionSearchDto } from '@naver/dto/question.dto';
 
@@ -16,7 +17,8 @@ export class QuestionProcessorService {
     private readonly loginService: LoginService,
     private readonly questionService: QuestionService,
     private readonly autoAnswerService: AutoAnswerService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
+    private readonly slackNotification: SlackNotificationService,
   ) {}
 
   async processQuestions(
@@ -61,6 +63,9 @@ export class QuestionProcessorService {
 
           processed++;
           this.logger.info('QuestionProcessorService', `Processed question: ${question.title}`);
+
+          // Send Slack notification
+          await this.slackNotification.notifyAnswerPosted(question);
 
           await new Promise((resolve) => setTimeout(resolve, 3000));
         } catch (error) {

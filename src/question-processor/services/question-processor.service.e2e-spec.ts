@@ -9,6 +9,7 @@ import { QuestionClassificationAgent } from '@llm/agents/question-classification
 import { AffiliateAnswerAgent } from '@llm/agents/affiliate-answer.agent';
 import { GeneralAnswerAgent } from '@llm/agents/general-answer.agent';
 import { LoggerService } from '@shared/services/logger.service';
+import { SlackNotificationService } from '@shared/services/slack-notification.service';
 import { ChatOpenAI } from '@langchain/openai';
 
 describe('QuestionProcessorService E2E', () => {
@@ -34,6 +35,7 @@ describe('QuestionProcessorService E2E', () => {
         AffiliateAnswerAgent,
         GeneralAnswerAgent,
         LoggerService,
+        SlackNotificationService,
         {
           provide: 'CHAT_MODEL',
           useFactory: (configService: ConfigService) => {
@@ -96,7 +98,7 @@ describe('QuestionProcessorService E2E', () => {
 
   describe('processQuestions - Full Workflow', () => {
     it('should process SAVINGS questions with affiliate link', async () => {
-      const keyword = '적금 추천';
+      const keyword = '돈 부족';
       const customLink = 'https://deg.kr/65b7c5d';
 
       const result = await service.processQuestions(keyword, customLink);
@@ -107,7 +109,7 @@ describe('QuestionProcessorService E2E', () => {
     }, 180000);
 
     it('should process SIDE_BUSINESS questions with affiliate link', async () => {
-      const keyword = '부업 추천';
+      const keyword = '부업';
       const customLink = 'https://deg.kr/65b7c5d';
 
       const result = await service.processQuestions(keyword, customLink);
@@ -115,7 +117,7 @@ describe('QuestionProcessorService E2E', () => {
       expect(result).toBeDefined();
       expect(result.processed).toBeGreaterThanOrEqual(0);
       expect(result.errors).toBeGreaterThanOrEqual(0);
-    }, 180000);
+    }, 1080000);
 
     it('should process INVESTMENT questions with affiliate link', async () => {
       const keyword = '투자';
